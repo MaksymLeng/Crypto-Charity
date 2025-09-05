@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+    provider = "postgresql"
+    url = env("DATABASE_URL")
+}
+
+
+enum Role {
+  USER
+  MOD
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  address   String   @unique
+  chainId   Int
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fundraisers Fundraiser[] @relation("UserFundraisers")
+  donations  Donation[]
+  sessions   Session[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+}
+
+enum FundraiserStatus {
+  PENDING   // ждёт модерации
+  ACTIVE    // одобрено
+  CLOSED    // закрыто
+}
+
+model Fundraiser {
+  id          String            @id @default(cuid())
+  title       String
+  description String
+  currency    String            @default("USD")
+  goalAmount  Decimal           @db.Decimal(18,6)
+  totalRaised Decimal           @default(0) @db.Decimal(18,6)
+  status      FundraiserStatus  @default(PENDING)
+  createdById String
+  createdBy   User              @relation("UserFundraisers", fields: [createdById], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  donations   Donation[]
+}
+
+model Donation {
+  id            String     @id @default(cuid())
+  fundraiserId  String
+  fundraiser    Fundraiser @relation(fields: [fundraiserId], references: [id])
+  userId        String?
+  user          User?      @relation(fields: [userId], references: [id])
+  chain         String      // e.g. 'ethereum'
+  amount        Decimal     @db.Decimal(18,6)
+  txHash        String      @unique
+  createdAt     DateTime    @default(now())
+}
