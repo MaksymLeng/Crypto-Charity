@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {ReactNode} from "react";
 import "./globals.css";
 import {geistMono, geistSans} from "@/app/ui/fonts";
+import Providers from "@/app/providers";
 
 
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export default function RootLayout({children}: Readonly<{
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
