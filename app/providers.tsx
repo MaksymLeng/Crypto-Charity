@@ -1,7 +1,13 @@
 'use client';
 
+import {ReactNode, useState} from "react";
+import {SessionProvider} from "next-auth/react";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import type { Chain } from 'wagmi/chains';
+import {
+    mainnet, polygon, arbitrum, base, bsc, optimism
+} from 'wagmi/chains';
 import {
     RainbowKitProvider,
     connectorsForWallets
@@ -10,22 +16,21 @@ import {
     metaMaskWallet,
     rabbyWallet,
     okxWallet,
-    coinbaseWallet,
     walletConnectWallet,
     injectedWallet,
-    // phantomWallet — есть, если хочешь EVM-режим Phantom
     phantomWallet
 } from '@rainbow-me/rainbowkit/wallets';
 import '@rainbow-me/rainbowkit/styles.css';
+
+const CHAINS: readonly [Chain, ...Chain[]] = [mainnet, polygon, arbitrum, base, bsc, optimism ];
 
 const wallets = [
     metaMaskWallet,
     rabbyWallet,
     okxWallet,
-    coinbaseWallet,
     walletConnectWallet,
     injectedWallet,
-    phantomWallet, // опционально (у Phantom есть EVM-режим)
+    phantomWallet,
 ];
 
 const connectors = connectorsForWallets(
@@ -41,16 +46,31 @@ const connectors = connectorsForWallets(
     }
 );
 
+const transports = Object.fromEntries(
+    CHAINS.map((ch) => [
+        ch.id,
+        http(process.env[`NEXT_PUBLIC_RPC_${ch.id}`] /* можно undefined */),
+    ])
+);
+
 const config = createConfig({
-    chains: [mainnet],
-    transports: { [mainnet.id]: http() },
+    chains: CHAINS,
+    transports,
     connectors
 });
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children }: { children: ReactNode }) {
+    const [queryClient] = useState(() => new QueryClient());
+
     return (
-        <WagmiProvider config={config}>
-            <RainbowKitProvider>{children}</RainbowKitProvider>
-        </WagmiProvider>
+        <SessionProvider>
+            <QueryClientProvider client={queryClient}>
+                <WagmiProvider config={config}>
+                    <RainbowKitProvider>
+                        {children}
+                    </RainbowKitProvider>
+                </WagmiProvider>
+            </QueryClientProvider>
+        </SessionProvider>
     );
 }
