@@ -1,19 +1,19 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Input } from "@/app/components/ui/input";
+import { Input } from "@/app/components/ui/shadcn/input";
 import {
     Command,
     CommandEmpty,
     CommandGroup,
     CommandItem,
     CommandList,
-} from "@/app/components/ui/command";
+} from "@/app/components/ui/shadcn/command";
 import {
     Popover,
     PopoverTrigger,
     PopoverContent,
-} from "@/app/components/ui/popover";
+} from "@/app/components/ui/shadcn/popover";
 import { Search, Loader2 } from "lucide-react";
 import { NavbarSearchProps, Suggestion } from "@/app/lib/definitions";
 

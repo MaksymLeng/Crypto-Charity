@@ -15,8 +15,12 @@ export interface NavbarSearchProps {
     isLoading?: boolean;
 }
 
-
-// Define the type for the user
-export type User = {
-    address: string
-}
+export type FundraiserCardProps = {
+    slug: string;
+    title: string;
+    short: string;
+    coverUrl?: string | null;
+    currency: string;
+    goalAmount: number;
+    totalRaised: number;
+};

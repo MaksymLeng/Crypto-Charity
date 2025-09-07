@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import {ReactNode} from "react";
 import "./globals.css";
-import {geistMono, geistSans} from "@/app/ui/fonts";
+import {geistMono, geistSans} from "@/app/components/ui/fonts";
 import Providers from "@/app/providers";
 
 

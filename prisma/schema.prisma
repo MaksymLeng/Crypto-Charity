@@ -3,7 +3,7 @@ generator client {
 }
 datasource db {
     provider = "postgresql"
-    url       = env("POSTGRES_URL")  // через pooler
+    url       = env("POSTGRES_PRISMA_URL")  // через pooler
     directUrl = env("POSTGRES_URL_NON_POOLING")    // прямое подключение для миграций/db push
 }
 
@@ -44,11 +44,14 @@ enum FundraiserStatus {
 model Fundraiser {
   id          String            @id @default(cuid())
   title       String
+  slug        String            @unique   // <— человекочитаемый путь
   description String
+  short       String            @default("") // краткий тизер на карточке
   currency    String            @default("USD")
   goalAmount  Decimal           @db.Decimal(18,6)
   totalRaised Decimal           @default(0) @db.Decimal(18,6)
   status      FundraiserStatus  @default(PENDING)
+  coverUrl    String?                         // <— картинка-обложка
   createdById String
   createdBy   User              @relation("UserFundraisers", fields: [createdById], references: [id])
   createdAt   DateTime          @default(now())

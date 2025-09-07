@@ -1,31 +1,41 @@
-'use client'
 
-import NavbarSearch from "@/app/ui/navbar/search";
-import Image from "next/image";
-import Link from "next/link";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import WalletAuthBridge from "@/app/components/WalletAuthBridge";
+import { prisma } from '@/lib/prisma';
+import Navbar from "@/app/components/ui/navbar/navbar";
+import FundraiserCard from '@/app/components/FundraiserCard';
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+    const items = await prisma.fundraiser.findMany({
+        where: { status: 'ACTIVE' },
+        orderBy: { createdAt: 'desc' },
+        take: 30,
+        select: {
+            slug: true,
+            title: true,
+            short: true,
+            coverUrl: true,
+            currency: true,
+            goalAmount: true,
+            totalRaised: true,
+        },
+    });
+
+    const data = items.map((i) => ({
+        ...i,
+        goalAmount: Number(i.goalAmount),
+        totalRaised: Number(i.totalRaised),
+    }));
+
     return (
-        <main className="flex min-h-screen flex-col">
-            <nav className="flex flex-wrap items-center justify-between w-full py-6 px-4">
-                <div className="flex gap-2">
-                    <Image src="/crypto-charity-black.svg" alt="Icons cryptocharity" width={24} height={24}/>
-                    <Link href="/" className="text-xl font-semibold">
-                        Crypto Charity
-                    </Link>
-                </div>
-                <div className="flex gap-5 items-center">
-                    <NavbarSearch/>
-                    <button className="text-md text-blue-500 cursor-pointer font-semibold transition transform active:scale-95">How it works</button>
-                </div>
-                <div>
-                    <ConnectButton />
-                    <WalletAuthBridge />
-                </div>
-            </nav>
+        <main className="flex min-h-screen flex-col"> <Navbar />
             <div className="h-px w-full bg-gray-200 my-2"></div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {data.map((fr) => (
+                    <FundraiserCard key={fr.slug} {...fr} />
+                ))}
+            </div>
         </main>
     );
 }
