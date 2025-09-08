@@ -28,7 +28,8 @@ export default async function Home() {
     }));
 
     return (
-        <main className="flex min-h-screen flex-col"> <Navbar />
+        <main className="flex min-h-screen flex-col">
+            <Navbar />
             <div className="h-px w-full bg-gray-200 my-2"></div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

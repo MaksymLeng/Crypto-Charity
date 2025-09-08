@@ -7,9 +7,11 @@ import Link from "next/link";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import WalletAuthBridge from "@/app/components/WalletAuthBridge";
 import { Menu } from "lucide-react";
+import { useAccount } from 'wagmi';
 
 export default function Navbar () {
     const [open, setOpen] = useState(false);
+    const { isConnected } = useAccount();
 
     return (
         <nav className="w-full py-3 px-3 sm:px-4 border-b border-gray-200/60">
@@ -25,9 +27,11 @@ export default function Navbar () {
                 {/* Поиск — на мобилках занимает всю ширину в выпадайке */}
                 <div className="hidden md:flex items-center gap-4">
                     <NavbarSearch className="w-64" />
-                    <button className="hidden sm:inline-block text-sm text-blue-600 cursor-pointer font-semibold transition transform active:scale-95">
-                        How it works
-                    </button>
+                    {!isConnected && ( // 👈 показываем только если кошелек НЕ подключен
+                        <button className="hidden sm:inline-block text-sm text-blue-600 cursor-pointer font-semibold transition transform active:scale-95">
+                            How it works
+                        </button>
+                    )}
                 </div>
 
                 {/* Правый блок */}
@@ -57,9 +61,11 @@ export default function Navbar () {
                     </div>
 
                     <div className="px-1 flex items-center justify-between gap-2">
-                        <button className="text-sm text-blue-600 font-semibold transition active:scale-95">
-                            How it works
-                        </button>
+                        {!isConnected && (
+                            <button className="text-sm text-blue-600 font-semibold transition active:scale-95">
+                                ⓘ How it works
+                            </button>
+                        )}
                         <div className="flex items-center gap-2">
                             <div className="scale-95">
                                 <ConnectButton showBalance={false} chainStatus="icon" accountStatus="avatar" />
