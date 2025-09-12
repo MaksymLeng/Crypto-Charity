@@ -13,6 +13,9 @@ export interface NavbarSearchProps {
     className?: string;
     debounceMs?: number;
     isLoading?: boolean;
+    variant?: 'light' | 'dark';
+    size?: 'sm' | 'md' | 'lg';
+    showShortcutHint?: boolean;
 }
 
 export type FundraiserCardProps = {
@@ -24,3 +27,19 @@ export type FundraiserCardProps = {
     goalAmount: number;
     totalRaised: number;
 };
+
+export type Step = {
+    title: string;
+    subtitle?: string;
+    image?: { src: string; alt: string; w?: number; h?: number };
+    body?: string;
+};
+
+export type HowItWorksModalProps = {
+    isOpen: boolean;
+    onCloseAction: () => void;
+    onCompleteAction: () => void;           // вызовем это после 3-го шага
+    steps?: Step[];                    // можно пробросить свои шаги
+};
+
+export type EventPageProps = { params: Promise<{ slug: string }> };

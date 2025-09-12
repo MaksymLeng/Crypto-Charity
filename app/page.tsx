@@ -1,7 +1,7 @@
 
 import { prisma } from '@/lib/prisma';
 import Navbar from "@/app/components/ui/navbar/navbar";
-import FundraiserCard from '@/app/components/FundraiserCard';
+import FundraiserCard from '@/app/components/ui/FundraiserCard';
 
 export const revalidate = 60;
 
@@ -28,11 +28,11 @@ export default async function Home() {
     }));
 
     return (
-        <main className="flex min-h-screen flex-col">
+        <main className="flex min-h-screen flex-col items-center">
             <Navbar />
             <div className="h-px w-full bg-gray-200 my-2"></div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl">
                 {data.map((fr) => (
                     <FundraiserCard key={fr.slug} {...fr} />
                 ))}

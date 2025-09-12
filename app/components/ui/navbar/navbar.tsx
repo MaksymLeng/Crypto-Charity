@@ -1,80 +1,92 @@
 'use client';
 
-import { useState } from 'react';
-import NavbarSearch from "@/app/components/ui/navbar/search";
-import Image from "next/image";
-import Link from "next/link";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import WalletAuthBridge from "@/app/components/WalletAuthBridge";
-import { Menu } from "lucide-react";
+import Image from 'next/image';
+import Link from 'next/link';
 import { useAccount } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { Info } from 'lucide-react';
 
-export default function Navbar () {
-    const [open, setOpen] = useState(false);
+import NavbarSearch from '@/app/components/ui/navbar/search';
+import WalletAuthBridge from '@/app/components/ui/WalletAuthBridge';
+import { useState } from 'react';
+import HowItWorksModal from "@/app/components/ui/HowItWorksModal"; // ✅
+
+export default function Navbar() {
     const { isConnected } = useAccount();
+    const { openConnectModal } = useConnectModal();
+    const [showHow, setShowHow] = useState(false); // ✅
 
     return (
-        <nav className="w-full py-3 px-3 sm:px-4 border-b border-gray-200/60">
-            <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-                {/* Лого + название */}
-                <div className="flex items-center gap-2 min-w-0">
+        <nav className="w-full border-b border-white/10 pt-2">
+            <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-3 sm:px-4">
+                {/* Левый блок: логотип + название */}
+                <div className="flex min-w-0 items-center gap-2">
                     <Link href="/" className="flex items-center gap-2">
-                        <Image src="/crypto-charity-black.svg" alt="Icons cryptocharity" width={24} height={24}/>
-                        <span className="text-base sm:text-lg font-semibold truncate">Crypto Charity</span>
+                        <Image
+                            src="/crypto-charity-white.svg"
+                            alt="Crypto Charity"
+                            width={28}
+                            height={28}
+                            priority
+                        />
+                        <span className="truncate text-lg font-semibold">Crypto Charity</span>
                     </Link>
                 </div>
 
-                {/* Поиск — на мобилках занимает всю ширину в выпадайке */}
-                <div className="hidden md:flex items-center gap-4">
-                    <NavbarSearch className="w-64" />
-                    {!isConnected && ( // 👈 показываем только если кошелек НЕ подключен
-                        <button className="hidden sm:inline-block text-sm text-blue-600 cursor-pointer font-semibold transition transform active:scale-95">
-                            How it works
-                        </button>
-                    )}
-                </div>
-
-                {/* Правый блок */}
-                <div className="hidden md:flex items-center gap-3">
-                    {/* Поджали кнопки, чтобы не ломали строку на md */}
-                    <div className="scale-95 origin-right">
-                        <ConnectButton showBalance={false} chainStatus="icon" accountStatus="address" />
-                    </div>
-                    <WalletAuthBridge />
-                </div>
-
-                {/* Бургер — только на мобилках */}
-                <button
-                    className="md:hidden inline-flex items-center justify-center rounded-lg p-2 hover:bg-gray-100 active:scale-95 transition"
-                    aria-label="Open menu"
-                    onClick={() => setOpen(v => !v)}
-                >
-                    <Menu className="h-6 w-6" />
-                </button>
-            </div>
-
-            {/* Мобильное меню (collapsible) */}
-            {open && (
-                <div className="md:hidden mt-3 space-y-3">
-                    <div className="px-1">
-                        <NavbarSearch className="w-full" />
-                    </div>
-
-                    <div className="px-1 flex items-center justify-between gap-2">
+                {/* Центр: большой поиск + How it works */}
+                <div className="flex flex-1 items-center justify-center gap-3 px-2">
+                    <div className="flex w-full max-w-3xl items-center gap-3">
+                        <NavbarSearch
+                            className="w-full"
+                            placeholder="Search cryptocharity"
+                            debounceMs={300}
+                            variant="light"
+                            size="lg"
+                            showShortcutHint
+                        />
                         {!isConnected && (
-                            <button className="text-sm text-blue-600 font-semibold transition active:scale-95">
-                                ⓘ How it works
+                            <button
+                                className="hidden shrink-0 items-center gap-1.5 text-sm text-sky-500 hover:text-sky-400 md:inline-flex active:scale-95 transition cursor-pointer"
+                                onClick={() => setShowHow(true)}
+                            >
+                                <Info className="h-4 w-4" />
+                                <span>How it works</span>
                             </button>
                         )}
-                        <div className="flex items-center gap-2">
-                            <div className="scale-95">
-                                <ConnectButton showBalance={false} chainStatus="icon" accountStatus="avatar" />
-                            </div>
-                            <WalletAuthBridge />
-                        </div>
                     </div>
                 </div>
+                <div className="hidden items-center gap-3 md:flex">
+                    {!isConnected ? (
+                        <>
+                            <button
+                                className="text-sm text-sky-500 active:scale-95 transition cursor-pointer"
+                                onClick={openConnectModal ?? undefined}
+                            >
+                                Log In
+                            </button>
+                            <button
+                                className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold hover:bg-sky-400 active:scale-95 transition cursor-pointer text-white"
+                                onClick={openConnectModal ?? undefined}
+                            >
+                                Sign Up
+                            </button>
+                        </>
+                    ) : (
+                        <WalletAuthBridge />
+                    )}
+                </div>
+            </div>
+            {!isConnected && (
+                <HowItWorksModal
+                    isOpen={showHow}
+                    onCloseAction={() => setShowHow(false)}
+                    onCompleteAction={() => {
+                        // после 3-го шага → коннект кошелька
+                        openConnectModal?.();
+                    }}
+                />
             )}
         </nav>
     );
 }
+

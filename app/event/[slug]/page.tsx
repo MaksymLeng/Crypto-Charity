@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Navbar from "@/app/components/ui/navbar/navbar";
+import DonateForm from '@/app/components/ui/DonateForm';
+import {EventPageProps} from "@/app/lib/definitions";
 
-type Props = { params: Promise<{ slug: string }> };
-
-export default async function EventPage({ params }: Props) {
+export default async function EventPage({ params }: EventPageProps) {
     const { slug } = await params;
 
     const fr = await prisma.fundraiser.findUnique({
@@ -31,9 +31,7 @@ export default async function EventPage({ params }: Props) {
 
                     ) : null}
                 </div>
-
                 <h1 className="mt-5 text-3xl font-bold">{fr.title}</h1>
-                <p className="mt-2 text-zinc-700">{fr.description}</p>
 
                 <div className="mt-5">
                     <div className="h-3 w-full rounded bg-zinc-200 overflow-hidden">
@@ -45,11 +43,10 @@ export default async function EventPage({ params }: Props) {
                     </div>
                 </div>
 
-                {/* CTA зона — позже сюда прикрутим донат */}
-                <div className="mt-6 flex gap-3">
-                    <button className="px-4 py-2 rounded-lg bg-black text-white">Donate</button>
-                    <button className="px-4 py-2 rounded-lg border">Share</button>
-                </div>
+                <DonateForm currency={fr.currency} />
+
+                <p className="mt-5 text-zinc-700 whitespace-pre-line"> {fr.description.replace(/\\n/g, '\n')}
+                </p>
             </div>
         </main>
     );

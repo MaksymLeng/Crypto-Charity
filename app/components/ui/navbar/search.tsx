@@ -1,34 +1,36 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect, useMemo } from "react";
-import { Input } from "@/app/components/ui/shadcn/input";
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { Input } from '@/app/components/ui/shadcn/input';
 import {
     Command,
     CommandEmpty,
     CommandGroup,
     CommandItem,
     CommandList,
-} from "@/app/components/ui/shadcn/command";
+} from '@/app/components/ui/shadcn/command';
 import {
     Popover,
     PopoverTrigger,
     PopoverContent,
-} from "@/app/components/ui/shadcn/popover";
-import { Search, Loader2 } from "lucide-react";
-import { NavbarSearchProps, Suggestion } from "@/app/lib/definitions";
+} from '@/app/components/ui/shadcn/popover';
+import { Search as SearchIcon, Loader2 } from 'lucide-react';
+import { NavbarSearchProps, Suggestion} from '@/app/lib/definitions';
+
 
 export default function NavbarSearch({
-                                         placeholder = "Search cryptocharity",
+                                         placeholder = 'Search cryptocharity',
                                          onSearch,
                                          suggestions = [],
                                          className,
                                          debounceMs = 300,
                                          isLoading = false,
+                                         variant = 'light',
+                                         size = 'md',
+                                         showShortcutHint = false,
                                      }: NavbarSearchProps) {
-    const [query, setQuery] = useState("");
+    const [query, setQuery] = useState('');
     const [open, setOpen] = useState(false);
-
-    // корневой контейнер — чтобы понимать, ушёл ли фокус наружу
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     // Debounce onSearch
@@ -45,7 +47,7 @@ export default function NavbarSearch({
     const grouped = useMemo(() => {
         const map = new Map<string, Suggestion[]>();
         for (const s of suggestions) {
-            const key = s.group ?? "Suggestions";
+            const key = s.group ?? 'Suggestions';
             if (!map.has(key)) map.set(key, []);
             map.get(key)!.push(s);
         }
@@ -58,7 +60,6 @@ export default function NavbarSearch({
         onSearch?.(val);
     }
 
-    // Закрыть, если ушёл фокус из всего поповера
     function handleBlur() {
         setTimeout(() => {
             const active = document.activeElement as HTMLElement | null;
@@ -66,13 +67,25 @@ export default function NavbarSearch({
         }, 0);
     }
 
+    const sizeCls =
+        size === 'lg'
+            ? 'h-11 text-sm'
+            : size === 'sm'
+                ? 'h-9 text-sm'
+                : 'h-10 text-sm';
+
+    const variantCls =
+        variant === 'dark'
+            ? 'bg-white/5 hover:bg-white/10 text-white placeholder:text-white/60 ring-1 ring-white/10 focus-visible:ring-white/20'
+            : 'bg-gray-100 hover:bg-gray-200 text-black placeholder:text-black/60';
+
     return (
         <div ref={containerRef} className={className}>
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
-                    <div className="relative w-full max-w-xs">
-                        <Search
-                            className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 opacity-60"
+                    <div className="relative w-full">
+                        <SearchIcon
+                            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-70"
                             aria-hidden
                         />
                         <Input
@@ -82,39 +95,52 @@ export default function NavbarSearch({
                             onClick={() => setOpen(true)}
                             onBlur={handleBlur}
                             onKeyDown={(e) => {
-                                if (e.key === "Enter") setOpen(true);
-                                if (e.key === "Escape") setOpen(false);
+                                if (e.key === 'Enter') setOpen(true);
+                                if (e.key === 'Escape') setOpen(false);
                             }}
-                            className="pl-9 pr-30 cursor-text bg-gray-100 hover:bg-gray-200"
+                            className={[
+                                'w-full rounded-xl pl-9 pr-12',
+                                sizeCls,
+                                variantCls,
+                            ].join(' ')}
                             aria-label="Search"
                         />
-                        <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs opacity-60">
+                        {/* Индикатор загрузки */}
+                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs opacity-70">
                             {isLoading && <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />}
                         </div>
+                        {/* Подсказка '/' как у Polymarket */}
+                        {showShortcutHint && (
+                            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                                <kbd className="rounded-md border border-white/20 px-1.5 py-0.5 text-[11px] opacity-80">
+                                    /
+                                </kbd>
+                            </div>
+                        )}
                     </div>
                 </PopoverTrigger>
 
                 <PopoverContent
-                    className="w-[320px] p-0"
+                    className="w-[--radix-popover-trigger-width] p-0"
                     align="start"
                     sideOffset={8}
-                    onOpenAutoFocus={(e) => e.preventDefault()} // не перехватывать фокус у инпута
+                    onOpenAutoFocus={(e) => e.preventDefault()}
                 >
-                    <Command className="bg-gray-200">
+                    <Command className={variant === 'dark' ? 'bg-white/5 text-white' : 'bg-gray-200'}>
                         <CommandList>
                             <CommandEmpty>No results.</CommandEmpty>
 
-                            <CommandGroup heading="Browse" className="">
-                                <CommandItem onSelect={() => handleItemSelect("trending")}>🔥 Trending</CommandItem>
-                                <CommandItem onSelect={() => handleItemSelect("popular")}>⭐ Popular</CommandItem>
-                                <CommandItem onSelect={() => handleItemSelect("liquid")}>💧 Liquid</CommandItem>
+                            <CommandGroup heading="Browse">
+                                <CommandItem onSelect={() => handleItemSelect('trending')}>🔥 Trending</CommandItem>
+                                <CommandItem onSelect={() => handleItemSelect('popular')}>⭐ Popular</CommandItem>
+                                <CommandItem onSelect={() => handleItemSelect('liquid')}>💧 Liquid</CommandItem>
                             </CommandGroup>
 
                             <CommandGroup heading="Topics">
-                                <CommandItem onSelect={() => handleItemSelect("live-crypto")}>📈 Live Crypto</CommandItem>
-                                <CommandItem onSelect={() => handleItemSelect("politics")}>🏛 Politics</CommandItem>
-                                <CommandItem onSelect={() => handleItemSelect("sports")}>⚽ Sports</CommandItem>
-                                <CommandItem onSelect={() => handleItemSelect("tech")}>💻 Tech</CommandItem>
+                                <CommandItem onSelect={() => handleItemSelect('live-crypto')}>📈 Live Crypto</CommandItem>
+                                <CommandItem onSelect={() => handleItemSelect('politics')}>🏛 Politics</CommandItem>
+                                <CommandItem onSelect={() => handleItemSelect('sports')}>⚽ Sports</CommandItem>
+                                <CommandItem onSelect={() => handleItemSelect('tech')}>💻 Tech</CommandItem>
                             </CommandGroup>
 
                             {grouped.map(([group, items]) => (
@@ -133,4 +159,3 @@ export default function NavbarSearch({
         </div>
     );
 }
-
