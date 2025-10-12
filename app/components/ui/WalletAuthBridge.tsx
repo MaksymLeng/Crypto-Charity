@@ -16,10 +16,10 @@ export default function WalletAuthBridge() {
     const lastTriedFor = useRef<string | null>(null);
 
     useEffect(() => {
-        const run = async () => {
+        const run = async (): Promise<void> => {
             if (locking.current) return;
 
-            // авто-logout, если кошелёк отключился
+            // Авто-logout, если кошелёк отключился
             if (walletStatus === 'disconnected' && authStatus === 'authenticated') {
                 locking.current = true;
                 try {
@@ -31,7 +31,7 @@ export default function WalletAuthBridge() {
                 return;
             }
 
-            // авто-login, если кошелёк подключен
+            // Авто-login, если кошелёк подключен
             if (walletStatus === 'connected' && address) {
                 const u = session?.user as { address?: string } | undefined;
                 const sessAddr = typeof u?.address === 'string' ? u.address.toLowerCase() : null;
@@ -46,7 +46,8 @@ export default function WalletAuthBridge() {
                 try {
                     // 1) серверный nonce
                     const r = await fetch('/api/siwe/nonce', { cache: 'no-store' });
-                    const { nonce } = (await r.json()) as { nonce: string };
+                    const data: { nonce: string } = await r.json();
+                    const { nonce } = data;
 
                     // 2) SIWE message
                     const msg = new SiweMessage({
@@ -60,16 +61,18 @@ export default function WalletAuthBridge() {
                     });
 
                     // 3) подпись
-                    const signature = await signMessageAsync({ message: msg.prepareMessage() });
+                    const signature = await signMessageAsync({
+                        message: msg.prepareMessage(),
+                    });
 
                     // 4) верификация через NextAuth
-                    const res = (await signIn('credentials', {
+                    const res = await signIn('credentials', {
                         message: JSON.stringify(msg),
                         signature,
                         redirect: false,
-                    })) as { error?: string } | undefined;
+                    });
 
-                    if (!res || res.error) {
+                    if (!res || (res as { error?: string }).error) {
                         disconnect();
                         if (authStatus === 'authenticated') await signOut({ redirect: false });
                         lastTriedFor.current = null;
@@ -78,7 +81,7 @@ export default function WalletAuthBridge() {
 
                     lastTriedFor.current = address.toLowerCase();
                 } catch {
-                    // если что-то пошло не так — рвём коннект и чистим сессию
+                    // Если что-то пошло не так — рвём коннект и чистим сессию
                     disconnect();
                     if (authStatus === 'authenticated') await signOut({ redirect: false });
                     lastTriedFor.current = null;
@@ -89,7 +92,16 @@ export default function WalletAuthBridge() {
         };
 
         void run();
-    }, [walletStatus, address, authStatus, session?.user, chainId, signMessageAsync, disconnect]);
+    }, [
+        walletStatus,
+        address,
+        authStatus,
+        session?.user,
+        chainId,
+        signMessageAsync,
+        disconnect,
+        signOut,
+    ]);
 
     return null;
 }
