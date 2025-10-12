@@ -44,7 +44,7 @@ enum FundraiserStatus {
 model Fundraiser {
   id          String            @id @default(cuid())
   title       String
-  slug        String            @unique   // <— человекочитаемый путь
+  slug        String            @unique
   description String
   short       String            @default("") // краткий тизер на карточке
   currency    String            @default("USD")
